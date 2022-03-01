@@ -4,7 +4,7 @@ ENV GOPROXY="direct"
 
 RUN mkdir /tmpapp && mkdir /tmpapp/bin
 WORKDIR /tmpapp
-# NOTE: relative path = /app
+# NOTE: relative path = /tmpapp
 COPY *.yaml *.go go.mod go.sum ./
 COPY templates ./templates
 COPY cmd ./cmd
