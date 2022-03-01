@@ -1,13 +1,18 @@
 FROM golang:1.16 AS build
-WORKDIR /echoserver
 
-ENV GOPROXY=https://proxy.golang.org
-COPY go.mod /echoserver/
+ENV GOPROXY="direct"
+
+RUN mkdir /tmpapp && mkdir /tmpapp/bin
+WORKDIR /tmpapp
+# NOTE: relative path = /app
+COPY *.yaml *.go go.mod go.sum ./
+COPY templates ./templates
+COPY cmd ./cmd
 RUN go mod download
-
-COPY cmd/echo-server/main.go main.go
-COPY cmd/echo-server/bindata.go bindata.go
-RUN CGO_ENABLED=0 GOOS=linux GOFLAGS=-ldflags=-w go build -o /go/bin/echo-server -ldflags=-s -v github.com/stevesloka/echo-server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /tmpapp/bin/echoserver
 
 FROM scratch AS final
-COPY --from=build /go/bin/echo-server /bin/echo-server
+
+COPY --from=build /tmpapp/bin/echoserver /echoserver
+EXPOSE 8080
+ENTRYPOINT ["./echoserver"]
